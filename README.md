@@ -23,6 +23,7 @@ TODO:
 
 We conduct the experiments with 4 24G RTX3090 on CUDA 11.1. For more details, please refer to the `requirements.txt`. We recommend to install [pytorch](https://pytorch.org/) firstly, and then run:
 ```
+pip install numpy
 pip install -r requirements.txt
 ```
 ## Test
