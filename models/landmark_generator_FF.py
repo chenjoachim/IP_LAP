@@ -119,7 +119,7 @@ class Track_combiner(nn.Module):
         self.linear = nn.Linear(1024, 512)
         if act == 'ReLU':
             self.act = nn.ReLU()
-        elif act == 'Tanh':
+        elif act == 'tanh':
             self.act = nn.Tanh()
 
     def forward(self, main_mel, other_mel):
@@ -135,9 +135,9 @@ class Track_combiner(nn.Module):
         return combined_mel
 
 
-class Landmark_generator_multi(nn.Module):
+class Landmark_generator_FF(nn.Module):
     def __init__(self,T,d_model,nlayers,nhead,dim_feedforward,dropout=0.1):
-        super(Landmark_generator_multi, self).__init__()
+        super(Landmark_generator_FF, self).__init__()
         self.main_mel_encoder=nn.Sequential(  #  (B*T,1,hv,wv)
             Conv2d(1, 32, kernel_size=3, stride=1, padding=1),
             Conv2d(32, 32, kernel_size=3, stride=1, padding=1, residual=True),
@@ -249,13 +249,14 @@ class Landmark_generator_multi(nn.Module):
 
     def forward(self, T_mels_main, T_mels_other, T_pose, Nl_pose, Nl_content):
                 # (B,T,1,hv,wv) (B,T,2,74) (B,N_l,2,74)  (B,N_l,2,57)
-        B,T,N_l= T_mels.size(0),T_mels.size(1),Nl_content.size(1)
+        B,T,N_l= T_mels_main.size(0),T_mels_main.size(1),Nl_content.size(1)
 
         #1. obtain full reference landmarks
         Nl_ref = torch.cat([Nl_pose, Nl_content], dim=3)  #(B,Nl,2,131=74+57)
         Nl_ref = torch.cat([Nl_ref[i] for i in range(Nl_ref.size(0))], dim=0)  # (B*Nl,2,131)
 
-        T_mels=torch.cat([T_mels[i] for i in range(T_mels.size(0))],dim=0) #(B*T,1,hv,wv)
+        T_mels_main = torch.cat([T_mels_main[i] for i in range(T_mels_main.size(0))],dim=0) #(B*T,1,hv,wv)
+        T_mels_other = torch.cat([T_mels_other[i] for i in range(T_mels_other.size(0))],dim=0) #(B*T,1,hv,wv)
         T_pose = torch.cat([T_pose[i] for i in range(T_pose.size(0))],dim=0)  # (B*T,2,74)
 
         # 2. get embedding
