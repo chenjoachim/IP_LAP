@@ -16,10 +16,7 @@ TODO:
 [[Paper]](https://arxiv.org/abs/2305.08293) [[Demo Video]](https://youtu.be/wtb689iTJC8)
 
 ## Requirements
-- Python 3.7.13
-- torch 1.10.0
-- torchvision 0.11.0
-- ffmpeg
+- Python 3.10.0
 
 We conduct the experiments with 4 24G RTX3090 on CUDA 11.1. For more details, please refer to the `requirements.txt`. We recommend to install [pytorch](https://pytorch.org/) firstly, and then run:
 ```
@@ -27,9 +24,15 @@ pip install numpy
 pip install -r requirements.txt
 ```
 ## Test
-Download the pre-trained models from [OneDrive](https://1drv.ms/f/s!Amqu9u09qiUGi7UJIADzCCC9rThkpQ?e=P1jG5N) or [jianguoyun](https://www.jianguoyun.com/p/DeXpK34QgZ-EChjI9YcFIAA), and place them to the folder `test/checkpoints` . Then run the following command:
+Download the pre-trained models from [OneDrive](https://1drv.ms/f/s!Amqu9u09qiUGi7UJIADzCCC9rThkpQ?e=P1jG5N) or [jianguoyun](https://www.jianguoyun.com/p/DeXpK34QgZ-EChjI9YcFIAA), and place them to the folder `test/checkpoints` .
+Then run the following command:
 ```
 CUDA_VISIBLE_DEVICES=0 python inference_single.py
+```
+For FeedForward (FF) model for two wavefiles, use this checkpoint: [FF_model](https://drive.google.com/file/d/1-1ykjMaa-w1DCUkKIUEC9fIKkf9DKSOm/view?usp=sharing)
+Then run the following command:
+```
+CUDA_VISIBLE_DEVICES=0 python inference_FF.py
 ```
 To inference on other videos, please specify the `--input` and `--audio` option and see more details in code.
 
