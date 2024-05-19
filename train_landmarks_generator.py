@@ -9,10 +9,14 @@ from tensorboardX import SummaryWriter
 from models import Landmark_generator as Landmark_transformer
 import argparse
 parser=argparse.ArgumentParser()
-parser.add_argument('--pre_audio_root',default='...../Dataset/lrs2_preprocessed_audio',
+parser.add_argument('--pre_audio_root',default='./filelists/allabout/audio',
                     help='root path for preprocessed  audio')
-parser.add_argument('--landmarks_root',default='...../Dataset/lrs2_landmarks',
+parser.add_argument('--landmarks_root',default='./filelists/allabout/landmarks',
                     help='root path for preprocessed  landmarks')
+parser.add_argument('--freeze', action="store_true", 
+                    help="freeze all parameters except FF layer")
+parser.add_argument('--finetune_path',default=None,
+                    help='path of checkpoint for finetuning')
 args=parser.parse_args()
 #network parameters
 d_model=512
@@ -24,11 +28,12 @@ Nl=15
 T = 5
 Project_name = 'landmarkT5_d512_fe1024_lay4_head4'
 print('Project_name:', Project_name)
-finetune_path =None
+finetune_path = args.finetune_path
+freeze = args.freeze
 num_workers = 8
-batch_size =128  # 512
-batch_size_val =128  #512
-evaluate_interval = 5000  #
+batch_size =32  # 512
+batch_size_val =32  #512
+evaluate_interval = 500  #
 checkpoint_interval = evaluate_interval
 mel_step_size = 16
 fps = 25
@@ -157,7 +162,7 @@ class Dataset(object):
                 T_content[idx, 1, :] = torch.FloatTensor([T_content_landmarks[idx][i][2] for i in range(len(T_content_landmarks[idx]))])  # y
             # 03. get T audio
             try:
-                audio_mel = np.load(join(args.pre_audio_root,vid_name, "audio.npy"))
+                audio_mel = np.load(join(args.pre_audio_root,vid_name, "audio_matched.npy"))
             except Exception as e:
                 continue
             T_mels = []
@@ -278,6 +283,10 @@ if __name__ == '__main__':
         state_dict_needed = {k: v for k, v in new_s.items() if k in model_dict.keys()}  # we need in model
         model_dict.update(state_dict_needed)
         model.load_state_dict(model_dict)
+        if(freeze):
+            for name, param in model.named_parameters():
+                if 'transformer' in name:
+                    param.requires_grad = False
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     if torch.cuda.device_count() > 1:
         model = torch.nn.DataParallel(model)
